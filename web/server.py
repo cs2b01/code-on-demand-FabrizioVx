@@ -1,6 +1,8 @@
 from flask import Flask,render_template, request, session, Response, redirect
 from database import connector
 from model import entities
+from flask import Flask
+from flask_socketio import SocketIO
 import json
 import time
 
@@ -8,6 +10,8 @@ db = connector.Manager()
 engine = db.createEngine()
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'vnkdjnfjknfl1232#'
+socketio = SocketIO(app)
 
 @app.route('/')
 def index():
@@ -61,9 +65,11 @@ def create_user():
     session.commit()
     return 'Created User'
 
+
+
 @app.route('/authenticate', methods = ["POST"])
 def authenticate():
-    time.sleep(8)
+    time.sleep(2)
     message = json.loads(request.data)
     username = message['username']
     password = message['password']
@@ -77,10 +83,22 @@ def authenticate():
         message = {'message': 'Authorized'}
         return Response(message, status=200, mimetype='application/json')
     except Exception:
-        message = {'message': 'Unauthorized'}
+        message = {'message': 'UnauthorXized'}
         return Response(message, status=401, mimetype='application/json')
+
+
+def messageReceived(methods=['GET', 'POST']):
+    print('message was received!!!')
+
+@socketio.on('my event')
+def handle_my_custom_event(json, methods=['GET', 'POST']):
+    print('received my event: ' + str(json))
+    socketio.emit('my response', json, callback=messageReceived)
+
 
 
 if __name__ == '__main__':
     app.secret_key = ".."
-    app.run(port=8080, threaded=True, host=('127.0.0.1'))
+    #app.run(port=8080, threaded=True, host=('127.0.0.1'),debug =True)
+    socketio.run(app, debug=True)
+
