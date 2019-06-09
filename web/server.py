@@ -10,7 +10,6 @@ db = connector.Manager()
 engine = db.createEngine()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'vnkdjnfjknfl1232#'
 socketio = SocketIO(app)
 
 @app.route('/')
